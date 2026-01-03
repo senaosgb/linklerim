@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔗 Link Merkezi</title>
+    <title>🔗 KISAYOLLAR</title>
     <style>
         * {
             margin: 0;
@@ -29,15 +29,11 @@
         }
 
         h1 {
-            font-size: 2rem;
+            font-size: 2.2rem;
             color: white;
             text-shadow: 0 4px 20px rgba(0,0,0,0.3);
-            margin-bottom: 3px;
-        }
-
-        .subtitle {
-            color: rgba(255,255,255,0.9);
-            font-size: 0.85rem;
+            letter-spacing: 2px;
+            font-weight: 700;
         }
 
         .loading {
@@ -60,16 +56,18 @@
 
         .links-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-            gap: 10px;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 11px;
         }
 
         .link-item {
             background: white;
-            border-radius: 10px;
-            padding: 10px;
+            border-radius: 11px;
+            padding: 11px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
             transition: transform 0.2s;
+            cursor: pointer;
+            position: relative;
         }
 
         .link-item:hover {
@@ -80,18 +78,18 @@
         .link-header {
             display: flex;
             align-items: center;
-            gap: 7px;
-            margin-bottom: 6px;
+            gap: 8px;
+            margin-bottom: 7px;
         }
 
         .link-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 7px;
+            width: 38px;
+            height: 38px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.1rem;
+            font-size: 1.3rem;
             flex-shrink: 0;
             overflow: hidden;
         }
@@ -103,20 +101,20 @@
         }
 
         .link-icon.emoji {
-            font-size: 1.1rem;
+            font-size: 1.3rem;
         }
 
         .link-title {
-            font-size: 0.8rem;
+            font-size: 0.9rem;
             font-weight: 700;
             color: #2d3748;
             line-height: 1.2;
         }
 
         .link-description {
-            font-size: 0.7rem;
+            font-size: 0.8rem;
             color: #718096;
-            margin-bottom: 7px;
+            margin-bottom: 8px;
             line-height: 1.2;
         }
 
@@ -124,20 +122,25 @@
             display: flex;
             gap: 4px;
             flex-wrap: wrap;
+            position: relative;
+            z-index: 10;
         }
 
         .btn {
-            padding: 6px 10px;
+            padding: 7px 0;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 0.72rem;
+            font-size: 0.8rem;
             font-weight: 600;
             transition: all 0.2s;
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 3px;
             text-decoration: none;
+            flex: 1;
+            min-width: 0;
         }
 
         .btn-primary {
@@ -197,37 +200,49 @@
             }
         }
 
+        @media (max-width: 1400px) {
+            .links-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        @media (max-width: 1100px) {
+            .links-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
         @media (max-width: 768px) {
             body {
                 padding: 10px;
             }
 
             h1 {
-                font-size: 1.5rem;
-            }
-
-            .subtitle {
-                font-size: 0.75rem;
+                font-size: 1.6rem;
             }
             
             .links-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(2, 1fr);
                 gap: 8px;
             }
 
             .link-item {
-                padding: 8px;
+                padding: 9px;
             }
 
             .btn {
-                padding: 5px 8px;
-                font-size: 0.7rem;
+                padding: 6px 0;
+                font-size: 0.75rem;
             }
         }
 
         @media (max-width: 480px) {
             h1 {
-                font-size: 1.3rem;
+                font-size: 1.4rem;
+            }
+
+            .links-grid {
+                grid-template-columns: 1fr;
             }
 
             header {
@@ -239,8 +254,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>🔗 Link Yönetim Merkezi</h1>
-            <p class="subtitle">Google Sheets ile yönetilen linkler</p>
+            <h1>KISAYOLLAR</h1>
         </header>
 
         <div class="loading" id="loading">📊 Linkler yükleniyor...</div>
@@ -250,7 +264,6 @@
     <div class="toast" id="toast"></div>
 
     <script>
-        // Google Sheets CSV linkinizi buraya yapıştırın
         const SHEETS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTKQCMNBpspvQty0P5BuNkdNSrlzbRC-z0faX2xAyC2kkFL3qWPGJMEG9Zh4HJJntQdC7hYWceLGPeU/pub?output=csv';
 
         let links = [];
@@ -264,7 +277,8 @@
             }, 3000);
         }
 
-        function copyToClipboard(text) {
+        function copyToClipboard(text, event) {
+            event.stopPropagation();
             navigator.clipboard.writeText(text).then(() => {
                 showToast('✓ Link kopyalandı!');
             }).catch(() => {
@@ -272,9 +286,18 @@
             });
         }
 
-        function shareWhatsApp(title, url, description) {
+        function shareWhatsApp(title, url, description, event) {
+            event.stopPropagation();
             const text = encodeURIComponent(`*${title}*\n\n${description}\n\n${url}`);
             window.open(`https://wa.me/?text=${text}`, '_blank');
+        }
+
+        function openLink(url, event) {
+            // Eğer buton tıklanmadıysa
+            if (!event.target.classList.contains('btn') && 
+                !event.target.closest('.btn')) {
+                window.open(url, '_blank');
+            }
         }
 
         function parseCSV(csv) {
@@ -325,20 +348,6 @@
             const loading = document.getElementById('loading');
             const grid = document.getElementById('linksGrid');
             
-            if (!SHEETS_CSV_URL || SHEETS_CSV_URL === 'BURAYA_GOOGLE_SHEETS_CSV_LINKİNİZİ_YAPIŞTIRIN') {
-                loading.innerHTML = `
-                    <div class="error">
-                        ⚠️ Google Sheets CSV linki ayarlanmamış!<br><br>
-                        <strong>Nasıl ayarlanır?</strong><br>
-                        1. GitHub'da bu dosyayı düzenleyin (✏️ Edit)<br>
-                        2. Kod içinde <code>SHEETS_CSV_URL</code> satırını bulun<br>
-                        3. Tırnak içine Google Sheets CSV linkinizi yapıştırın<br>
-                        4. Değişiklikleri kaydedin (Commit changes)
-                    </div>
-                `;
-                return;
-            }
-
             loading.style.display = 'block';
             grid.innerHTML = '';
 
@@ -381,21 +390,20 @@
                 const iconClass = isUrl ? '' : 'emoji';
 
                 return `
-                <div class="link-item">
+                <div class="link-item" onclick="openLink('${link.url}', event)">
                     <div class="link-header">
                         <div class="link-icon ${iconClass}" style="background: ${link.color || 'linear-gradient(135deg, #667eea, #764ba2)'}">${iconHtml}</div>
                         <div class="link-title">${link.title}</div>
                     </div>
                     <div class="link-description">${link.description || ''}</div>
                     <div class="button-group">
-                        <a href="${link.url}" target="_blank" class="btn btn-primary">🔗 Git</a>
-                        <button class="btn btn-copy" onclick="copyToClipboard('${link.url.replace(/'/g, "\\'")}')">📋 Kopyala</button>
+                        <a href="${link.url}" target="_blank" class="btn btn-primary" onclick="event.stopPropagation()">🔗 Git</a>
+                        <button class="btn btn-copy" onclick="copyToClipboard('${link.url.replace(/'/g, "\\'")}', event)">📋</button>
                         ${link.whatsapp ? `
-                            <button class="btn btn-whatsapp" onclick='shareWhatsApp(\`${link.title}\`, "${link.url}", \`${link.description || ''}\`)'>
+                            <button class="btn btn-whatsapp" onclick="shareWhatsApp('${link.title.replace(/'/g, "\\'")}', '${link.url}', '${(link.description || '').replace(/'/g, "\\'")}', event)">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
                                     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.890-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
                                 </svg>
-                                Paylaş
                             </button>
                         ` : ''}
                     </div>
@@ -409,5 +417,3 @@
     </script>
 </body>
 </html>
-
-
