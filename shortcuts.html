@@ -269,28 +269,34 @@
             }
         }
 
-        function openShortcut(url, title) {
-            const urlType = getUrlType(url);
-            
-            // Yerel dosya/klasör uyarısı
-            if (urlType.type === 'local') {
-                showToast('⚠️ Yerel klasörler tarayıcıdan direkt açılamaz. URL kopyalandı, dosya gezgininde yapıştırın.', 'warning');
-                
-                // URL'yi kopyala
-                const cleanUrl = url.replace('file:///', '').replace(/\//g, '\\');
-                navigator.clipboard.writeText(cleanUrl).catch(() => {
-                    console.log('Kopyalama başarısız');
-                });
-                
-                // Yine de dene (bazı tarayıcılar izin verebilir)
-                setTimeout(() => {
-                    window.open(url, '_blank');
-                }, 1500);
-            } else {
-                // Normal web/drive linkleri
-                window.open(url, '_blank');
-            }
+function openShortcut(url, title) {
+    const urlType = getUrlType(url);
+    
+    // Yerel dosya/klasör uyarısı
+    if (urlType.type === 'local') {
+        // Windows network path formatını düzelt
+        let cleanUrl = url;
+        if (url.startsWith('\\\\')) {
+            // Zaten UNC path formatında
+            cleanUrl = url;
+        } else if (url.startsWith('file:///')) {
+            // file:/// formatını temizle
+            cleanUrl = url.replace('file:///', '').replace(/\//g, '\\');
         }
+        
+        // Kopyala
+        navigator.clipboard.writeText(cleanUrl).then(() => {
+            showToast('📋 Kısayol kopyalandı! Windows Gezgini (Win+E) adres çubuğuna yapıştırın: ' + cleanUrl, 'warning');
+        }).catch(() => {
+            showToast('⚠️ Yerel klasör: ' + cleanUrl, 'warning');
+        });
+        
+        return; // Tarayıcıda açmayı deneme
+    } else {
+        // Normal web/drive linkleri
+        window.open(url, '_blank');
+    }
+}
 
         function parseCSV(csv) {
             const lines = csv.split('\n');
@@ -394,4 +400,5 @@
         loadShortcuts();
     </script>
 </body>
+
 </html>
