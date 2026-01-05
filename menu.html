@@ -94,13 +94,23 @@
             cursor: pointer;
             transition: all 0.2s;
             border: 2px solid transparent;
+            position: relative;
         }
 
-        .menu-item:hover {
+        .menu-item:hover:not(.disabled) {
             background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
             border-color: #667eea;
             transform: translateX(4px);
+        }
+
+        .menu-item.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .menu-item.loading {
+            pointer-events: none;
         }
 
         .menu-item-title {
@@ -117,8 +127,28 @@
             margin-top: 4px;
         }
 
-        .menu-item:hover .menu-item-desc {
+        .menu-item:hover:not(.disabled) .menu-item-desc {
             color: rgba(255,255,255,0.9);
+        }
+
+        .spinner {
+            display: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: auto;
+        }
+
+        .menu-item.loading .spinner {
+            display: block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         .back-button {
@@ -136,6 +166,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            z-index: 100;
         }
 
         .back-button:hover {
@@ -155,11 +186,20 @@
             display: none;
             z-index: 3000;
             font-size: 0.9rem;
+            max-width: 400px;
         }
 
         .toast.show {
             display: block;
             animation: slideIn 0.3s ease;
+        }
+
+        .toast.success {
+            background: #48bb78;
+        }
+
+        .toast.error {
+            background: #f56565;
         }
 
         @keyframes slideIn {
@@ -171,6 +211,39 @@
                 transform: translateX(0);
                 opacity: 1;
             }
+        }
+
+        .config-section {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+
+        .config-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            margin-top: 8px;
+        }
+
+        .config-button {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: transform 0.2s;
+        }
+
+        .config-button:hover {
+            transform: translateY(-2px);
         }
 
         @media (max-width: 768px) {
@@ -201,6 +274,21 @@
             <p class="subtitle">Google Sheets fonksiyonlarını buradan çalıştırabilirsiniz</p>
         </header>
 
+        <!-- Konfigürasyon -->
+        <div class="config-section">
+            <h3 style="margin-bottom: 12px; color: #2d3748;">⚙️ Web App URL Ayarı</h3>
+            <p style="color: #718096; font-size: 0.9rem; margin-bottom: 12px;">
+                Apps Script deploy URL'nizi buraya girin (Apps Script'te: Deploy > New deployment > Web app)
+            </p>
+            <input 
+                type="text" 
+                id="webAppUrl" 
+                class="config-input" 
+                placeholder="https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec"
+                value="">
+            <button class="config-button" onclick="saveWebAppUrl()">💾 Kaydet</button>
+        </div>
+
         <div class="menu-grid">
             <!-- EK-2 İşlemleri -->
             <div class="menu-category">
@@ -210,19 +298,31 @@
                 </div>
                 <div class="menu-items">
                     <div class="menu-item" onclick="runScript('createSingleDocument')">
-                        <div class="menu-item-title">📜 Seçili Satır(lar)dan EK-2 Oluştur</div>
+                        <div class="menu-item-title">
+                            📜 Seçili Satır(lar)dan EK-2 Oluştur
+                            <div class="spinner"></div>
+                        </div>
                         <div class="menu-item-desc">Tabloda seçtiğiniz satırlardan EK-2 belgesi oluşturur</div>
                     </div>
                     <div class="menu-item" onclick="runScript('openFilterAndGenerateDialog')">
-                        <div class="menu-item-title">📋 Menüden EK-2 Oluştur (Filtreleme ile)</div>
+                        <div class="menu-item-title">
+                            📋 Menüden EK-2 Oluştur (Filtreleme ile)
+                            <div class="spinner"></div>
+                        </div>
                         <div class="menu-item-desc">Filtreleme yaparak toplu EK-2 oluşturur</div>
                     </div>
                     <div class="menu-item" onclick="runScript('FilterDialog')">
-                        <div class="menu-item-title">🧹 Eski Kayıtları Sil</div>
+                        <div class="menu-item-title">
+                            🧹 Eski Kayıtları Sil
+                            <div class="spinner"></div>
+                        </div>
                         <div class="menu-item-desc">Eski EK-2 kayıtlarını temizler</div>
                     </div>
                     <div class="menu-item" onclick="runScript('klasoruAc')">
-                        <div class="menu-item-title">📁 EK-2 Klasörünü Aç</div>
+                        <div class="menu-item-title">
+                            📁 EK-2 Klasörünü Aç
+                            <div class="spinner"></div>
+                        </div>
                         <div class="menu-item-desc">EK-2 belgelerinin bulunduğu klasörü açar</div>
                     </div>
                 </div>
@@ -236,11 +336,17 @@
                 </div>
                 <div class="menu-items">
                     <div class="menu-item" onclick="runScript('showCertificateDialog')">
-                        <div class="menu-item-title">📜 Eğitim Sertifikası Oluştur</div>
+                        <div class="menu-item-title">
+                            📜 Eğitim Sertifikası Oluştur
+                            <div class="spinner"></div>
+                        </div>
                         <div class="menu-item-desc">Personel için eğitim sertifikası hazırlar</div>
                     </div>
                     <div class="menu-item" onclick="runScript('showEgitimListesiForm')">
-                        <div class="menu-item-title">🧾 Eğitime Katılan Tablo Al</div>
+                        <div class="menu-item-title">
+                            🧾 Eğitime Katılan Tablo Al
+                            <div class="spinner"></div>
+                        </div>
                         <div class="menu-item-desc">Eğitime katılan personellerin listesini çıkarır</div>
                     </div>
                 </div>
@@ -254,19 +360,31 @@
                 </div>
                 <div class="menu-items">
                     <div class="menu-item" onclick="runScript('showSelectionDialog')">
-                        <div class="menu-item-title">🏢 Personel Sayfasına Firma Seç</div>
+                        <div class="menu-item-title">
+                            🏢 Personel Sayfasına Firma Seç
+                            <div class="spinner"></div>
+                        </div>
                         <div class="menu-item-desc">Belirli bir firmanın personellerini görüntüler</div>
                     </div>
                     <div class="menu-item" onclick="runScript('exportToExcel_Safe')">
-                        <div class="menu-item-title">⬇️ Personel Sayfasını Excel Olarak İndir</div>
+                        <div class="menu-item-title">
+                            ⬇️ Personel Sayfasını Excel Olarak İndir
+                            <div class="spinner"></div>
+                        </div>
                         <div class="menu-item-desc">Personel listesini Excel formatında indirir</div>
                     </div>
                     <div class="menu-item" onclick="runScript('showSearchModal')">
-                        <div class="menu-item-title">👷 Personel Bul</div>
+                        <div class="menu-item-title">
+                            👷 Personel Bul
+                            <div class="spinner"></div>
+                        </div>
                         <div class="menu-item-desc">Personel arama arayüzünü açar</div>
                     </div>
                     <div class="menu-item" onclick="runScript('openStampDialog')">
-                        <div class="menu-item-title">📋 Kaşe Oluştur</div>
+                        <div class="menu-item-title">
+                            📋 Kaşe Oluştur
+                            <div class="spinner"></div>
+                        </div>
                         <div class="menu-item-desc">Personel için kaşe belgesi hazırlar</div>
                     </div>
                 </div>
@@ -280,31 +398,52 @@
                 </div>
                 <div class="menu-items">
                     <div class="menu-item" onclick="runScript('showSahaTablosu')">
-                        <div class="menu-item-title">📋 Saha Tablosu Al</div>
+                        <div class="menu-item-title">
+                            📋 Saha Tablosu Al
+                            <div class="spinner"></div>
+                        </div>
                         <div class="menu-item-desc">Saha çalışma tablosunu oluşturur</div>
                     </div>
                     <div class="menu-item" onclick="runScript('importLatestExcelToAtamalar')">
-                        <div class="menu-item-title">🔄 Atamalar Sayfasını Güncelle</div>
+                        <div class="menu-item-title">
+                            🔄 Atamalar Sayfasını Güncelle
+                            <div class="spinner"></div>
+                        </div>
                         <div class="menu-item-desc">Personel atama bilgilerini günceller</div>
                     </div>
                     <div class="menu-item" onclick="runScript('showPersonelDurumDialog')">
-                        <div class="menu-item-title">⏱️ Personel Dakika Durumu Göster</div>
+                        <div class="menu-item-title">
+                            ⏱️ Personel Dakika Durumu Göster
+                            <div class="spinner"></div>
+                        </div>
                         <div class="menu-item-desc">Personellerin çalışma dakikalarını gösterir</div>
                     </div>
                     <div class="menu-item" onclick="runScript('tumIslemleriCalistir')">
-                        <div class="menu-item-title">🔧 Veri Aktarımını Çalıştır</div>
+                        <div class="menu-item-title">
+                            🔧 Veri Aktarımını Çalıştır
+                            <div class="spinner"></div>
+                        </div>
                         <div class="menu-item-desc">Otomatik veri aktarım işlemlerini başlatır</div>
                     </div>
                     <div class="menu-item" onclick="runScript('logUnmatchedDistricts')">
-                        <div class="menu-item-title">📍 İlçe Bilgisini Güncelle (Manuel)</div>
+                        <div class="menu-item-title">
+                            📍 İlçe Bilgisini Güncelle (Manuel)
+                            <div class="spinner"></div>
+                        </div>
                         <div class="menu-item-desc">İlçe eşleştirmelerini kontrol eder</div>
                     </div>
                     <div class="menu-item" onclick="runScript('hesaplaVeYaz')">
-                        <div class="menu-item-title">📆 Yıllık Süreleri Hesapla (Manuel)</div>
+                        <div class="menu-item-title">
+                            📆 Yıllık Süreleri Hesapla (Manuel)
+                            <div class="spinner"></div>
+                        </div>
                         <div class="menu-item-desc">Personel yıllık çalışma sürelerini hesaplar</div>
                     </div>
                     <div class="menu-item" onclick="runScript('uzmanRapor')">
-                        <div class="menu-item-title">👨‍⚕️ Uzman Raporu (Popup)</div>
+                        <div class="menu-item-title">
+                            👨‍⚕️ Uzman Raporu (Popup)
+                            <div class="spinner"></div>
+                        </div>
                         <div class="menu-item-desc">Uzman doktor raporunu görüntüler</div>
                     </div>
                 </div>
@@ -315,26 +454,74 @@
     <div class="toast" id="toast"></div>
 
     <script>
-        function showToast(message) {
+        // LocalStorage'dan URL'yi yükle
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedUrl = localStorage.getItem('webAppUrl');
+            if (savedUrl) {
+                document.getElementById('webAppUrl').value = savedUrl;
+            }
+        });
+
+        function saveWebAppUrl() {
+            const url = document.getElementById('webAppUrl').value.trim();
+            if (!url) {
+                showToast('❌ Lütfen geçerli bir URL girin!', 'error');
+                return;
+            }
+            localStorage.setItem('webAppUrl', url);
+            showToast('✅ Web App URL kaydedildi!', 'success');
+        }
+
+        function showToast(message, type = 'info') {
             const toast = document.getElementById('toast');
             toast.textContent = message;
-            toast.classList.add('show');
+            toast.className = 'toast show ' + type;
             setTimeout(() => {
                 toast.classList.remove('show');
             }, 3000);
         }
 
-        function runScript(functionName) {
-            showToast('⚠️ Bu fonksiyon Google Sheets içinden çalıştırılmalıdır!');
+        async function runScript(functionName) {
+            const webAppUrl = localStorage.getItem('webAppUrl');
             
-            // Alternatif: Google Sheets'i yeni sekmede açabilirsiniz
-            setTimeout(() => {
-                const sheetsUrl = 'https://docs.google.com/spreadsheets/d/1kO66ceCqkxt3UVnwwKCW_--euintBdqMSCxs_Ou6Eo/edit';
-                showToast('📊 Google Sheets açılıyor...');
-                setTimeout(() => {
-                    window.open(sheetsUrl, '_blank');
-                }, 1000);
-            }, 2000);
+            if (!webAppUrl) {
+                showToast('⚠️ Lütfen önce Web App URL\'sini ayarlayın!', 'error');
+                return;
+            }
+
+            // Butonu loading durumuna getir
+            const menuItem = event.currentTarget;
+            menuItem.classList.add('loading');
+
+            try {
+                showToast('⏳ İşlem başlatılıyor...');
+                
+                const response = await fetch(`${webAppUrl}?action=${functionName}`, {
+                    method: 'GET',
+                    mode: 'cors'
+                });
+
+                if (!response.ok) {
+                    throw new Error('İşlem başarısız oldu');
+                }
+
+                const result = await response.text();
+                
+                // Eğer sonuç HTML ise yeni pencerede aç
+                if (result.includes('<!DOCTYPE html>') || result.includes('<html')) {
+                    const newWindow = window.open();
+                    newWindow.document.write(result);
+                    showToast('✅ İşlem tamamlandı!', 'success');
+                } else {
+                    showToast('✅ ' + result, 'success');
+                }
+
+            } catch (error) {
+                console.error('Hata:', error);
+                showToast('❌ Hata: ' + error.message, 'error');
+            } finally {
+                menuItem.classList.remove('loading');
+            }
         }
     </script>
 </body>
