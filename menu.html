@@ -264,10 +264,9 @@
     </style>
 </head>
 <body>
-    <a href="javascript:history.back()" class="back-button">
-        ← Ana Sayfaya Dön
-    </a>
-
+<a href="https://senaosgb.github.io/linklerim/" class="back-button">
+    ← Ana Sayfaya Dön
+</a>
     <div class="container">
         <header>
             <h1>📋 Apps Script Menüler</h1>
@@ -481,48 +480,61 @@
             }, 3000);
         }
 
-        async function runScript(functionName) {
-            const webAppUrl = localStorage.getItem('webAppUrl');
-            
-            if (!webAppUrl) {
-                showToast('⚠️ Lütfen önce Web App URL\'sini ayarlayın!', 'error');
-                return;
-            }
+async function runScript(functionName) {
+    const webAppUrl = localStorage.getItem('webAppUrl');
+    
+    if (!webAppUrl) {
+        showToast('⚠️ Lütfen önce Web App URL\'sini ayarlayın!', 'error');
+        return;
+    }
 
-            // Butonu loading durumuna getir
-            const menuItem = event.currentTarget;
-            menuItem.classList.add('loading');
+    const menuItem = event.currentTarget;
+    menuItem.classList.add('loading');
 
-            try {
-                showToast('⏳ İşlem başlatılıyor...');
-                
-                const response = await fetch(`${webAppUrl}?action=${functionName}`, {
-                    method: 'GET',
-                    mode: 'cors'
-                });
+    try {
+        showToast('⏳ İşlem başlatılıyor...');
+        
+        const response = await fetch(`${webAppUrl}?action=${functionName}`, {
+            method: 'GET',
+            redirect: 'follow'
+        });
 
-                if (!response.ok) {
-                    throw new Error('İşlem başarısız oldu');
+        const contentType = response.headers.get('content-type');
+        
+        // HTML yanıt ise (dialog/form) - yeni pencerede aç
+        if (contentType && contentType.includes('text/html')) {
+            const htmlContent = await response.text();
+            const newWindow = window.open('', '_blank');
+            newWindow.document.write(htmlContent);
+            newWindow.document.close();
+            showToast('✅ Yeni pencerede açıldı!', 'success');
+        } 
+        // JSON yanıt ise (basit işlem)
+        else if (contentType && contentType.includes('application/json')) {
+            const result = await response.json();
+            if (result.success) {
+                if (result.url) {
+                    window.open(result.url, '_blank');
                 }
-
-                const result = await response.text();
-                
-                // Eğer sonuç HTML ise yeni pencerede aç
-                if (result.includes('<!DOCTYPE html>') || result.includes('<html')) {
-                    const newWindow = window.open();
-                    newWindow.document.write(result);
-                    showToast('✅ İşlem tamamlandı!', 'success');
-                } else {
-                    showToast('✅ ' + result, 'success');
-                }
-
-            } catch (error) {
-                console.error('Hata:', error);
-                showToast('❌ Hata: ' + error.message, 'error');
-            } finally {
-                menuItem.classList.remove('loading');
+                showToast('✅ ' + result.message, 'success');
+            } else {
+                showToast('❌ ' + result.message, 'error');
             }
         }
+        // Text yanıt
+        else {
+            const text = await response.text();
+            showToast('✅ ' + text, 'success');
+        }
+
+    } catch (error) {
+        console.error('Hata:', error);
+        showToast('❌ Hata: ' + error.message, 'error');
+    } finally {
+        menuItem.classList.remove('loading');
+    }
+}
     </script>
 </body>
 </html>
+
