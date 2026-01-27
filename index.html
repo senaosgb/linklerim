@@ -224,6 +224,10 @@
             transition: all 0.2s;
         }
 
+        .link-item:hover .link-title {
+            background: #e5e7eb;
+        }
+
         .link-description {
             font-size: 0.8rem;
             color: #64748b;
@@ -586,10 +590,8 @@
                     : icon;
                 const iconClass = isUrl ? '' : 'emoji';
 
-                // Başlık rengi - eğer yoksa default beyaz bg + siyah yazı
-                const titleBg = link.title_bg || '#ffffff';
-                const titleColor = link.title_color || '#1a1a1a';
-                const titleStyle = `background: ${titleBg}; color: ${titleColor};`;
+                // Minimal stil - hep aynı
+                const titleStyle = 'background: #f3f4f6; color: #1a1a1a;';
 
                 return `
                 <div class="link-item" onclick="openLink('${link.url}', event)">
