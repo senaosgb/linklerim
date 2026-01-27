@@ -64,7 +64,7 @@
         .links-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
+            gap: 13px;
         }
 
         .shortcuts-sidebar {
@@ -153,21 +153,22 @@
         }
 
         .shortcut-title {
-            font-size: 0.9rem;
-            font-weight: 700;
-            color: #1a202c;
+            font-size: 0.875rem;
+            font-weight: 800;
+            color: #000000;
             line-height: 1.3;
             overflow: hidden;
             text-overflow: ellipsis;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
+            letter-spacing: -0.01em;
         }
 
         .link-item {
             background: white;
-            border-radius: 14px;
-            padding: 18px;
+            border-radius: 12px;
+            padding: 12px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             transition: all 0.3s ease;
             cursor: pointer;
@@ -184,21 +185,21 @@
         .link-header {
             display: flex;
             align-items: center;
-            gap: 12px;
-            margin-bottom: 10px;
+            gap: 10px;
+            margin-bottom: 8px;
         }
 
         .link-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.6rem;
+            font-size: 1.4rem;
             flex-shrink: 0;
             overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.12);
         }
 
         .link-icon img {
@@ -208,43 +209,38 @@
         }
 
         .link-icon.emoji {
-            font-size: 1.6rem;
+            font-size: 1.4rem;
         }
 
         .link-title {
-            font-size: 1.05rem;
-            font-weight: 800;
-            color: #1a202c;
-            line-height: 1.3;
-            letter-spacing: -0.01em;
+            font-size: 0.95rem;
+            font-weight: 900;
+            color: #000000;
+            line-height: 1.25;
+            letter-spacing: -0.02em;
+            text-transform: none;
         }
 
         .link-description {
-            font-size: 0.875rem;
-            color: #4a5568;
-            margin-bottom: 14px;
-            line-height: 1.4;
-            min-height: 38px;
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-bottom: 10px;
+            line-height: 1.3;
+            min-height: 32px;
         }
 
         .button-group {
             display: flex;
-            gap: 6px;
+            gap: 5px;
             flex-wrap: wrap;
             position: relative;
             z-index: 10;
-            opacity: 0.85;
-            transition: opacity 0.2s;
-        }
-
-        .link-item:hover .button-group {
-            opacity: 1;
         }
 
         .btn {
-            padding: 8px 12px;
+            padding: 7px 10px;
             border: none;
-            border-radius: 8px;
+            border-radius: 7px;
             cursor: pointer;
             font-size: 0.8rem;
             font-weight: 600;
@@ -257,6 +253,11 @@
             flex: 1;
             min-width: 0;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            opacity: 0.9;
+        }
+
+        .link-item:hover .btn {
+            opacity: 1;
         }
 
         .btn-primary {
