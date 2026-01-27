@@ -19,7 +19,7 @@
         }
 
         .container {
-            max-width: 1600px;
+            max-width: 1800px;
             margin: 0 auto;
         }
 
@@ -54,10 +54,110 @@
             font-size: 0.9rem;
         }
 
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 280px;
+            gap: 15px;
+            align-items: start;
+        }
+
         .links-grid {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 11px;
+        }
+
+        .shortcuts-sidebar {
+            position: sticky;
+            top: 15px;
+            max-height: calc(100vh - 30px);
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .shortcuts-sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .shortcuts-sidebar::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+        }
+
+        .shortcuts-sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.3);
+            border-radius: 10px;
+        }
+
+        .shortcuts-sidebar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.5);
+        }
+
+        .shortcuts-header {
+            background: white;
+            border-radius: 11px;
+            padding: 12px;
+            margin-bottom: 8px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .shortcuts-header h2 {
+            font-size: 1rem;
+            color: #2d3748;
+            font-weight: 700;
+        }
+
+        .shortcuts-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .shortcut-item {
+            background: white;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            transition: all 0.2s;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 52px;
+        }
+
+        .shortcut-item:hover {
+            transform: translateX(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+        }
+
+        .shortcut-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .shortcut-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .shortcut-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #2d3748;
+            line-height: 1.2;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
         }
 
         .link-item {
@@ -189,6 +289,11 @@
             animation: slideIn 0.3s ease;
         }
 
+        .toast.warning {
+            background: #f59e0b;
+            color: #2d3748;
+        }
+
         @keyframes slideIn {
             from {
                 transform: translateX(400px);
@@ -202,13 +307,26 @@
 
         @media (max-width: 1400px) {
             .links-grid {
-                grid-template-columns: repeat(4, 1fr);
+                grid-template-columns: repeat(3, 1fr);
             }
         }
 
         @media (max-width: 1100px) {
-            .links-grid {
-                grid-template-columns: repeat(3, 1fr);
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .shortcuts-sidebar {
+                position: relative;
+                top: 0;
+                max-height: none;
+                margin-top: 15px;
+            }
+
+            .shortcuts-list {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 8px;
             }
         }
 
@@ -234,6 +352,10 @@
                 padding: 6px 0;
                 font-size: 0.75rem;
             }
+
+            .shortcuts-list {
+                grid-template-columns: 1fr;
+            }
         }
 
         @media (max-width: 480px) {
@@ -257,21 +379,33 @@
             <h1>SENA OSGB</h1>
         </header>
 
-        <div class="loading" id="loading">📊 Linkler yükleniyor...</div>
-        <div class="links-grid" id="linksGrid"></div>
+        <div class="loading" id="loading">📊 İçerik yükleniyor...</div>
+        
+        <div class="main-layout" id="mainLayout" style="display: none;">
+            <div class="links-grid" id="linksGrid"></div>
+            
+            <div class="shortcuts-sidebar">
+                <div class="shortcuts-header">
+                    <h2>📂 DİĞER KISAYOLLAR</h2>
+                </div>
+                <div class="shortcuts-list" id="shortcutsList"></div>
+            </div>
+        </div>
     </div>
 
     <div class="toast" id="toast"></div>
 
     <script>
-        const SHEETS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTKQCMNBpspvQty0P5BuNkdNSrlzbRC-z0faX2xAyC2kkFL3qWPGJMEG9Zh4HJJntQdC7hYWceLGPeU/pub?output=csv';
+        const MAIN_LINKS_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTKQCMNBpspvQty0P5BuNkdNSrlzbRC-z0faX2xAyC2kkFL3qWPGJMEG9Zh4HJJntQdC7hYWceLGPeU/pub?output=csv';
+        const SHORTCUTS_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTKQCMNBpspvQty0P5BuNkdNSrlzbRC-z0faX2xAyC2kkFL3qWPGJMEG9Zh4HJJntQdC7hYWceLGPeU/pub?gid=1250913624&output=csv';
 
-        let links = [];
+        let mainLinks = [];
+        let shortcuts = [];
 
-        function showToast(message) {
+        function showToast(message, type = '') {
             const toast = document.getElementById('toast');
             toast.textContent = message;
-            toast.classList.add('show');
+            toast.className = 'toast show ' + type;
             setTimeout(() => {
                 toast.classList.remove('show');
             }, 3000);
@@ -293,10 +427,38 @@
         }
 
         function openLink(url, event) {
-            // Eğer buton tıklanmadıysa
             if (!event.target.classList.contains('btn') && 
                 !event.target.closest('.btn')) {
                 window.open(url, '_blank');
+            }
+        }
+
+        function openShortcut(url, title) {
+            const urlType = getUrlType(url);
+            
+            if (urlType.type === 'local') {
+                showToast('⚠️ Yerel klasörler tarayıcıdan direkt açılamaz. URL kopyalandı.', 'warning');
+                
+                const cleanUrl = url.replace('file:///', '').replace(/\//g, '\\');
+                navigator.clipboard.writeText(cleanUrl).catch(() => {
+                    console.log('Kopyalama başarısız');
+                });
+                
+                setTimeout(() => {
+                    window.open(url, '_blank');
+                }, 1500);
+            } else {
+                window.open(url, '_blank');
+            }
+        }
+
+        function getUrlType(url) {
+            if (url.includes('drive.google.com') || url.includes('docs.google.com')) {
+                return { type: 'drive', label: 'Google Drive' };
+            } else if (url.startsWith('file:///') || url.startsWith('\\\\')) {
+                return { type: 'local', label: 'Yerel Klasör' };
+            } else {
+                return { type: 'web', label: 'Web Sitesi' };
             }
         }
 
@@ -336,7 +498,7 @@
                     }
                 });
 
-                if (row.title && row.url) {
+                if (row.title && (row.url || row.description)) {
                     data.push(row);
                 }
             }
@@ -344,32 +506,42 @@
             return data;
         }
 
-        async function loadLinks() {
+        async function loadAllContent() {
             const loading = document.getElementById('loading');
-            const grid = document.getElementById('linksGrid');
+            const mainLayout = document.getElementById('mainLayout');
             
             loading.style.display = 'block';
-            grid.innerHTML = '';
+            mainLayout.style.display = 'none';
 
             try {
-                const response = await fetch(SHEETS_CSV_URL);
-                if (!response.ok) throw new Error('Veri yüklenemedi');
-                
-                const csv = await response.text();
-                links = parseCSV(csv);
+                // Ana linkleri yükle
+                const mainResponse = await fetch(MAIN_LINKS_CSV);
+                if (!mainResponse.ok) throw new Error('Ana linkler yüklenemedi');
+                const mainCsv = await mainResponse.text();
+                mainLinks = parseCSV(mainCsv);
 
-                if (links.length === 0) {
-                    throw new Error('Hiç link bulunamadı');
+                // Kısayolları yükle
+                const shortcutsResponse = await fetch(SHORTCUTS_CSV);
+                if (!shortcutsResponse.ok) throw new Error('Kısayollar yüklenemedi');
+                const shortcutsCsv = await shortcutsResponse.text();
+                shortcuts = parseCSV(shortcutsCsv);
+
+                if (mainLinks.length === 0 && shortcuts.length === 0) {
+                    throw new Error('Hiç içerik bulunamadı');
                 }
 
                 loading.style.display = 'none';
-                renderLinks();
-                showToast(`✓ ${links.length} link yüklendi!`);
+                mainLayout.style.display = 'grid';
+                
+                renderMainLinks();
+                renderShortcuts();
+                
+                showToast(`✓ ${mainLinks.length} link ve ${shortcuts.length} kısayol yüklendi!`);
             } catch (error) {
                 loading.innerHTML = `
                     <div class="error">
                         ❌ Hata: ${error.message}<br><br>
-                        • Google Sheets linkinin doğru olduğundan emin olun<br>
+                        • Google Sheets linklerinin doğru olduğundan emin olun<br>
                         • Web'de yayınla ayarını kontrol edin<br>
                         • CSV formatını seçtiğinizden emin olun
                     </div>
@@ -378,10 +550,10 @@
             }
         }
 
-        function renderLinks() {
+        function renderMainLinks() {
             const container = document.getElementById('linksGrid');
             
-            container.innerHTML = links.map((link, index) => {
+            container.innerHTML = mainLinks.map((link) => {
                 const icon = link.icon || '📋';
                 const isUrl = icon.startsWith('http://') || icon.startsWith('https://');
                 const iconHtml = isUrl 
@@ -412,10 +584,26 @@
             }).join('');
         }
 
-        // Sayfa yüklendiğinde linkleri yükle
-        loadLinks();
+        function renderShortcuts() {
+            const container = document.getElementById('shortcutsList');
+            
+            container.innerHTML = shortcuts.map((shortcut) => {
+                const icon = shortcut.icon || '📎';
+                const color = shortcut.color || 'linear-gradient(135deg, #667eea, #764ba2)';
+                
+                return `
+                <div class="shortcut-item" onclick="openShortcut('${shortcut.url.replace(/'/g, "\\'")}', '${shortcut.title.replace(/'/g, "\\'")}')">
+                    <div class="shortcut-icon" style="background: ${color}">${icon}</div>
+                    <div class="shortcut-info">
+                        <div class="shortcut-title">${shortcut.title}</div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        // Sayfa yüklendiğinde içerikleri yükle
+        loadAllContent();
     </script>
 </body>
 </html>
-
-
