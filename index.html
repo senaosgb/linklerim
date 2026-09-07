@@ -441,13 +441,42 @@
             }, 3000);
         }
 
+        // ==========================================
+        // YENİ VE ZIRHLI KOPYALAMA FONKSİYONU
+        // ==========================================
         function copyToClipboard(text, event) {
-            event.stopPropagation();
-            navigator.clipboard.writeText(text).then(() => {
-                showToast('✓ Link kopyalandı!');
-            }).catch(() => {
-                showToast('❌ Kopyalama başarısız!');
-            });
+            if (event) event.stopPropagation();
+            
+            // 1. İframe içindeyse parent'taki pywebview'i bul
+            let pyAPI = null;
+            if (window.pywebview && window.pywebview.api) {
+                pyAPI = window.pywebview.api;
+            } else if (window.parent && window.parent.pywebview && window.parent.pywebview.api) {
+                pyAPI = window.parent.pywebview.api;
+            }
+
+            // 2. Python bağlantısı varsa kopyalamayı Python'a yaptır (Kesin Çözüm)
+            if (pyAPI) {
+                pyAPI.kopyala_py(text).then(function(response) {
+                    if (response && response.success) {
+                        showToast('✓ Link kopyalandı!');
+                    } else {
+                        showToast('❌ Kopyalama başarısız!', 'warning');
+                    }
+                }).catch(function() {
+                    showToast('❌ Python ile iletişim kurulamadı!', 'error');
+                });
+            } 
+            // 3. Eğer program exe değil de normal tarayıcıda açıldıysa eski usul dene
+            else {
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(text).then(() => {
+                        showToast('✓ Link kopyalandı!');
+                    }).catch(() => {
+                        showToast('❌ Kopyalama başarısız!', 'warning');
+                    });
+                }
+            }
         }
 
         function shareWhatsApp(title, url, description, event) {
@@ -463,6 +492,9 @@
             }
         }
 
+        // ==========================================
+        // YENİ KISAYOL AÇMA FONKSİYONU
+        // ==========================================
         function openShortcut(url, title) {
             const urlType = getUrlType(url);
             
@@ -470,9 +502,9 @@
                 showToast('⚠️ Yerel klasörler tarayıcıdan direkt açılamaz. URL kopyalandı.', 'warning');
                 
                 const cleanUrl = url.replace('file:///', '').replace(/\//g, '\\');
-                navigator.clipboard.writeText(cleanUrl).catch(() => {
-                    console.log('Kopyalama başarısız');
-                });
+                
+                // Artık doğrudan kendi yazdığımız zırhlı fonksiyonu çağırıyoruz
+                copyToClipboard(cleanUrl, null);
                 
                 setTimeout(() => {
                     window.open(url, '_blank');
