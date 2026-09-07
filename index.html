@@ -444,39 +444,31 @@
         // ==========================================
         // YENİ VE ZIRHLI KOPYALAMA FONKSİYONU
         // ==========================================
-        function copyToClipboard(text, event) {
+function copyToClipboard(text, event) {
             if (event) event.stopPropagation();
             
-            // 1. İframe içindeyse parent'taki pywebview'i bul
-            let pyAPI = null;
-            if (window.pywebview && window.pywebview.api) {
-                pyAPI = window.pywebview.api;
-            } else if (window.parent && window.parent.pywebview && window.parent.pywebview.api) {
-                pyAPI = window.parent.pywebview.api;
-            }
+            // Tarayıcı kısıtlamalarını aşan Görünmez Metin Kutusu (Textarea) Taktiği
+            var textArea = document.createElement("textarea");
+            textArea.value = text;
+            // Ekranda kaymayı önlemek için sabitliyoruz
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            textArea.style.position = "fixed";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
 
-            // 2. Python bağlantısı varsa kopyalamayı Python'a yaptır (Kesin Çözüm)
-            if (pyAPI) {
-                pyAPI.kopyala_py(text).then(function(response) {
-                    if (response && response.success) {
-                        showToast('✓ Link kopyalandı!');
-                    } else {
-                        showToast('❌ Kopyalama başarısız!', 'warning');
-                    }
-                }).catch(function() {
-                    showToast('❌ Python ile iletişim kurulamadı!', 'error');
-                });
-            } 
-            // 3. Eğer program exe değil de normal tarayıcıda açıldıysa eski usul dene
-            else {
-                if (navigator.clipboard) {
-                    navigator.clipboard.writeText(text).then(() => {
-                        showToast('✓ Link kopyalandı!');
-                    }).catch(() => {
-                        showToast('❌ Kopyalama başarısız!', 'warning');
-                    });
+            try {
+                var successful = document.execCommand('copy');
+                if (successful) {
+                    showToast('✓ Link kopyalandı!');
+                } else {
+                    showToast('❌ Kopyalama başarısız!', 'warning');
                 }
+            } catch (err) {
+                showToast('❌ Hata oluştu!', 'error');
             }
+            document.body.removeChild(textArea);
         }
 
         function shareWhatsApp(title, url, description, event) {
@@ -503,7 +495,7 @@
                 
                 const cleanUrl = url.replace('file:///', '').replace(/\//g, '\\');
                 
-                // Artık doğrudan kendi yazdığımız zırhlı fonksiyonu çağırıyoruz
+                // Artık doğrudan kusursuz fonksiyonumuzu çağırıyoruz
                 copyToClipboard(cleanUrl, null);
                 
                 setTimeout(() => {
